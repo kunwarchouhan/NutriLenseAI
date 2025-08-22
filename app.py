@@ -1,29 +1,32 @@
 import streamlit as st
-import pytesseract
-import cv2
+from google.cloud import vision
 import numpy as np
-from PIL import Image
+import cv2
 import re
+
 
 # ---------- Title ----------
 st.set_page_config(page_title="AI Nutrition Scanner", layout="centered")
 st.title("📦 AI Nutrition Scanner")
 st.write("Upload a food package photo and get nutrition facts & ingredients.")
 
-# ---------- Upload ----------
-uploaded_file = st.file_uploader("📤 Upload Food Label Image", type=["jpg", "png", "jpeg"])
+# ---------- Init Google Vision Client ----------
+client = vision.ImageAnnotatorClient()
 
 # ---------- OCR Function ----------
-def extract_text(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    text = pytesseract.image_to_string(gray)
-    return text
+def extract_text_google_vision(image_bytes):
+    image = vision.Image(content=image_bytes)
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+    if texts:
+        return texts[0].description
+    return ""
 
 # ---------- Nutrition Parser ----------
 def parse_nutrition(text):
     nutrition = {}
 
-    # Match values like Protein 5g, Fat 2.3 g, etc.
+    # Match values like Protein 5g, Fat 2.3 g, Calories 100 kcal, etc.
     matches = re.findall(r"([A-Za-z]+)\s*[:\-]?\s*([\d\.]+)\s*(mg|g|kcal)?", text, re.IGNORECASE)
 
     for m in matches:
@@ -34,13 +37,15 @@ def parse_nutrition(text):
 
     return nutrition
 
+# ---------- Upload ----------
+uploaded_file = st.file_uploader("📤 Upload Food Label Image", type=["jpg", "png", "jpeg"])
+
 # ---------- Main Processing ----------
 if uploaded_file is not None:
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    img = cv2.imdecode(file_bytes, 1)
+    file_bytes = uploaded_file.read()
 
     # OCR
-    text = extract_text(img)
+    text = extract_text_google_vision(file_bytes)
 
     st.subheader("🔹 Raw Extracted Text")
     st.text_area("", text, height=200)
@@ -55,4 +60,6 @@ if uploaded_file is not None:
         st.warning("⚠️ No nutrition info detected. Try clearer image.")
 
     # Show image preview
+    file_bytes_np = np.asarray(bytearray(file_bytes), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes_np, 1)
     st.image(img, caption="Uploaded Image", use_column_width=True)
