@@ -1,5 +1,9 @@
 streamlit
+google-cloud-vision
 opencv-python-headless
-pillow
-pytesseract
 numpy
+pandas
+transformers
+torch
+sentencepiece
+scikit-learn
