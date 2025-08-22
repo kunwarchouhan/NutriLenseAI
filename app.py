@@ -4,8 +4,6 @@ import numpy as np
 import cv2
 import re
 
-# ---------- Config ----------
-SERVICE_ACCOUNT_PATH = r"C:\Users\kunwa\OneDrive\Desktop\Prototype\nurti-lens-ai-90a8013ae959.json"
 
 # ---------- Title ----------
 st.set_page_config(page_title="AI Nutrition Scanner", layout="centered")
@@ -13,7 +11,7 @@ st.title("📦 AI Nutrition Scanner")
 st.write("Upload a food package photo and get nutrition facts & ingredients.")
 
 # ---------- Init Google Vision Client ----------
-client = vision.ImageAnnotatorClient.from_service_account_file(SERVICE_ACCOUNT_PATH)
+client = vision.ImageAnnotatorClient()
 
 # ---------- OCR Function ----------
 def extract_text_google_vision(image_bytes):
