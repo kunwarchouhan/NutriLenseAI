@@ -4,26 +4,6 @@ import cv2
 import numpy as np
 from PIL import Image
 import re
-import os
-
-# ✅ Try to locate Tesseract automatically
-def get_tesseract_path():
-    possible_paths = [
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
-    ]
-    for path in possible_paths:
-        if os.path.exists(path):
-            return path
-    return None
-
-# ✅ Check if Tesseract is available
-if not pytesseract.get_tesseract_version():
-    tesseract_path = get_tesseract_path()
-    if tesseract_path:
-        pytesseract.pytesseract.tesseract_cmd = tesseract_path
-    else:
-        st.error("❌ Tesseract not found. Please install it from https://github.com/UB-Mannheim/tesseract/wiki")
 
 # ---------- Title ----------
 st.set_page_config(page_title="AI Nutrition Scanner", layout="centered")
@@ -76,4 +56,3 @@ if uploaded_file is not None:
 
     # Show image preview
     st.image(img, caption="Uploaded Image", use_column_width=True)
-
