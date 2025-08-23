@@ -1,9 +1,11 @@
 import streamlit as st
 from google.cloud import vision, texttospeech
+from google.oauth2 import service_account
 import numpy as np
 import cv2
 import re
 import base64
+import os, json
 
 # ---------- Streamlit Page Config ----------
 st.set_page_config(page_title="Nutrition Advisor AI", layout="centered")
@@ -11,20 +13,15 @@ st.set_page_config(page_title="Nutrition Advisor AI", layout="centered")
 # ---------- Custom CSS ----------
 st.markdown("""
     <style>
-        /* Background gradient */
         .stApp {
             background: linear-gradient(135deg, #d9f4ff, #fef9ff);
             font-family: 'Segoe UI', sans-serif;
         }
-
-        /* Headings */
         h1, h2, h3 {
             text-align: center;
             font-weight: 600;
             color: #2c3e50;
         }
-
-        /* Section cards */
         .block-container {
             padding-top: 2rem;
         }
@@ -33,14 +30,12 @@ st.markdown("""
             margin-bottom: 0.5rem;
             font-size: 1.3rem;
         }
-        .css-1y4p8pa, .stDataFrame, .stText, .stMarkdown {
-            background: rgba(255, 255, 255, 0.7);
+        .stDataFrame, .stText, .stMarkdown, .stAlert, .stFileUploader {
+            background: rgba(255, 255, 255, 0.85);
             padding: 15px;
             border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
-
-        /* Buttons */
         button {
             background: linear-gradient(90deg, #0077ff, #00d4ff) !important;
             color: white !important;
@@ -56,14 +51,10 @@ st.markdown("""
             transform: scale(1.05);
             box-shadow: 0 6px 15px rgba(0, 119, 255, 0.5) !important;
         }
-
-        /* Uploaded Image */
         img {
             border-radius: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-
-        /* Audio Player */
         audio {
             width: 100%;
             margin-top: 10px;
@@ -79,8 +70,12 @@ st.write("✨ Upload a food package photo and get **nutrition facts, ingredients
 # ---------- Init Google Clients ----------
 @st.cache_resource
 def load_clients():
-    vision_client = vision.ImageAnnotatorClient()
-    tts_client = texttospeech.TextToSpeechClient()
+    # Load service account key from Streamlit secrets
+    gcp_key = json.loads(os.environ["GCP_KEY"])
+    credentials = service_account.Credentials.from_service_account_info(gcp_key)
+
+    vision_client = vision.ImageAnnotatorClient(credentials=credentials)
+    tts_client = texttospeech.TextToSpeechClient(credentials=credentials)
     return vision_client, tts_client
 
 vision_client, tts_client = load_clients()
@@ -169,8 +164,8 @@ def speak_text(text):
     synthesis_input = texttospeech.SynthesisInput(text=text)
 
     voice = texttospeech.VoiceSelectionParams(
-        language_code="en-IN",  # Indian English
-        name="en-IN-Wavenet-A"  # Female Indian voice
+        language_code="en-IN",
+        name="en-IN-Wavenet-A"  # Indian Female
     )
 
     audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.MP3)
@@ -201,7 +196,6 @@ def process_image(file_bytes):
             [{"Nutrient": k, "Value": v} for k, v in nutrition_info.items()],
             use_container_width=True
         )
-        # Voice button
         if st.button("🔊 Read Nutrition Facts"):
             narr_text = "Here are the nutrition facts: " + ", ".join([f"{k}: {v}" for k, v in nutrition_info.items()])
             speak_text(narr_text)
