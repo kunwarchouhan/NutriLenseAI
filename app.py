@@ -7,7 +7,7 @@ from PIL import Image
 # Load Google Cloud credentials from Streamlit secrets
 gcp_key = st.secrets["GCP_KEY"]
 with open("nurti-lens-ai-90a8013ae959.json", "w") as f:
-    json.dump(dict(gcp_key), f)
+     json.dump(gcp_key, f)
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "nurti-lens-ai-90a8013ae959.json"
 
@@ -72,4 +72,5 @@ if uploaded_file:
 
     else:
         st.warning("⚠️ Could not extract text. Try another image.")
+
 
