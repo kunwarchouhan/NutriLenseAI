@@ -4,13 +4,15 @@ import streamlit as st
 from google.cloud import vision, texttospeech
 from PIL import Image
 
-# Load Google Cloud credentials from Streamlit secrets
-gcp_key = json.loads(st.secrets["GCP_KEY"])  # convert string → dict
-with open("nurti-lens-ai-90a8013ae959.json", "w") as f:
-    json.dump(gcp_key, f)
+# GCP Key is already a dict (no need for json.loads)
+gcp_key = st.secrets["GCP_KEY"]
 
-# Set environment variable for Google SDK
+# Save to a JSON file so Google SDKs can use it
+with open("nurti-lens-ai-90a8013ae959.json", "w") as f:
+    json.dump(dict(gcp_key), f)   # make sure it’s a plain dict
+
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "nurti-lens-ai-90a8013ae959.json"
+
 
 # Initialize Google Vision & TTS clients
 vision_client = vision.ImageAnnotatorClient()
@@ -73,3 +75,4 @@ if uploaded_file:
 
     else:
         st.warning("⚠️ Could not extract text. Try another image.")
+
