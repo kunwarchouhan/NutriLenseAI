@@ -5,11 +5,12 @@ from google.cloud import vision, texttospeech
 from PIL import Image
 
 # --- Google Cloud Credentials ---
-gcp_key = st.secrets["GCP_KEY"]   # already a dict, no need to load
+gcp_key = json.loads(st.secrets["GCP_KEY"])   # convert string → dict
 with open("nurti-lens-ai-90a8013ae959.json", "w") as f:
     json.dump(gcp_key, f)
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "nurti-lens-ai-90a8013ae959.json"
+
 
 # --- Initialize Google Clients ---
 vision_client = vision.ImageAnnotatorClient()
@@ -74,3 +75,4 @@ if uploaded_file:
 
     else:
         st.warning("⚠️ Could not extract text. Try another image.")
+
