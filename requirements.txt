@@ -1,5 +1,7 @@
 streamlit
 google-cloud-vision
+google-cloud-texttospeech
+pillow
 opencv-python-headless
 numpy
 pandas
@@ -7,3 +9,4 @@ transformers
 torch
 sentencepiece
 scikit-learn
+
